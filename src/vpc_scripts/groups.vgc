@@ -1,0 +1,31 @@
+//-----------------------------------------------------------------------------
+//	GROUPS.VGC
+//
+//	Group Configurations for all Source(TM) Projects
+//-----------------------------------------------------------------------------
+
+///////////////////////
+// Group definitions //
+///////////////////////
+$Group "game"
+{
+	"client"
+	"server"
+	"game_shader_dx9"
+}
+
+$Group "everything"
+{
+	"fgdlib"
+	"interfaces"
+	"tier1"
+	"vgui_controls"
+	"client"
+	"server"
+	"game_shader_dx9"
+	"particles_dll"
+	"gamepadui"
+	//"resourcesystem"
+	//"framework2"
+	//"video_services"
+}

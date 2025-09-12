@@ -1,0 +1,8 @@
+
+# we are NOT committing massive zip files to this repository
+*.zip
+*.7z
+*.rar
+
+# Ignore Visual Studio files
+.vs/
