@@ -33,7 +33,7 @@ $Group "everything"
 $Group "utils"
 {
 	"vbsp"
-	"vvis"
-	"vrad"
+	"vvis_dll"
+	"vrad_dll"
 	//"hlmv"
 }

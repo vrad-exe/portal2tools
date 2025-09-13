@@ -55,12 +55,12 @@ $Project "vbsp"
 	"utils\vbsp\vbsp.vpc"
 }
 
-$Project "vrad"
+$Project "vrad_dll"
 {
 	"utils\vrad\vrad_dll.vpc"
 }
 
-$Project "vvis"
+$Project "vvis_dll"
 {
 	"utils\vvis\vvis_dll.vpc"
 }

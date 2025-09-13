@@ -106,6 +106,7 @@ $Project
 	{
 		$Implib	"$LIBPUBLIC\tier0"
 		$Lib	"$LIBPUBLIC\tier1"
+		$Lib	"$LIBPUBLIC\interfaces"
 		$Implib	"$LIBPUBLIC\vstdlib"
 	}
 }

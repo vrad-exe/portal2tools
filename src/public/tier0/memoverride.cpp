@@ -996,7 +996,7 @@ void __cdecl _aligned_free_dbg( void * memblock)
     _aligned_free(memblock);
 }
 
-#ifndef RML_DLL
+#if _MSC_VER < 1900
 size_t __cdecl _CrtSetDebugFillThreshold( size_t _NewDebugFillThreshold)
 {
 	Assert(0);
@@ -1007,6 +1007,7 @@ size_t __cdecl _CrtSetDebugFillThreshold( size_t _NewDebugFillThreshold)
 //===========================================
 // NEW!!! 64-bit
 
+#if (_MSC_VER < 1900) || !defined( _DEBUG )
 char * __cdecl _strdup ( const char * string )
 {
 	int nSize = strlen(string) + 1;
@@ -1015,6 +1016,7 @@ char * __cdecl _strdup ( const char * string )
 		memcpy( pCopy, string, nSize );
 	return pCopy;
 }
+#endif
 
 #if 0
 _TSCHAR * __cdecl _tfullpath_dbg ( _TSCHAR *UserBuf, const _TSCHAR *path, size_t maxlen, int nBlockUse, const char * szFileName, int nLine )
@@ -1064,19 +1066,22 @@ _TSCHAR * __cdecl _ttempnam ( const _TSCHAR *dir, const _TSCHAR *pfx )
 	Assert(0);
 	return 0;
 }
+#endif
 
 wchar_t * __cdecl _wcsdup_dbg ( const wchar_t * string, int nBlockUse, const char * szFileName, int nLine )
 {
-	Assert(0);
-	return 0;
+	// I think these can be the same... - Kelsey
+	return _wcsdup(string);
 }
 
 wchar_t * __cdecl _wcsdup ( const wchar_t * string )
 {
-	Assert(0);
-	return 0;
+	int nSize = wcslen(string) + 1;
+	wchar_t *pCopy = (wchar_t*)AllocUnattributed( nSize * sizeof(wchar_t) );
+	if ( pCopy )
+		memcpy( pCopy, string, nSize * sizeof(wchar_t) );
+	return pCopy;
 }
-#endif
 } // end extern "C"
 
 #if _MSC_VER >= 1400
