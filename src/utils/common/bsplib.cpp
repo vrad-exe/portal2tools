@@ -4748,15 +4748,15 @@ bool CompressGameLump( BSPHeader_t *pInBSPHeader, BSPHeader_t *pOutBSPHeader, CU
 		{
 			if ( pInGameLump[i].flags & GAMELUMPFLAG_COMPRESSED )
 			{
-#ifdef INFESTED_DLL
+#ifndef HAS_LUMP_COMPRESSION
 				Error( "No support for compressed game lumps!\n" );
 #else
 				byte *pCompressedLump = ((byte *)pInBSPHeader) + pInGameLump[i].fileofs;
 				if ( CLZMA::IsCompressed( pCompressedLump ) )
 				{
-					inputBuffer.EnsureCapacity( CLZMA::GetActualSize( pCompressedLump ) );
-					unsigned int outSize = CLZMA::Uncompress( pCompressedLump, (unsigned char *)inputBuffer.Base() );
-					inputBuffer.SeekPut( CUtlBuffer::SEEK_CURRENT, outSize );
+					inBuffer.EnsureCapacity( CLZMA::GetActualSize( pCompressedLump ) );
+					unsigned int outSize = CLZMA::Uncompress( pCompressedLump, (unsigned char *)inBuffer.Base() );
+					inBuffer.SeekPut( CUtlBuffer::SEEK_CURRENT, outSize );
 					if ( outSize != CLZMA::GetActualSize( pCompressedLump ) )
 					{
 						Warning( "Decompressed size differs from header, BSP may be corrupt\n" );
@@ -4819,7 +4819,7 @@ bool CompressGameLump( BSPHeader_t *pInBSPHeader, BSPHeader_t *pOutBSPHeader, CU
 	return true;
 }
 
-#ifndef INFESTED_DLL
+#ifdef HAS_LUMP_COMPRESSION
 //-----------------------------------------------------------------------------
 // Compress callback for RepackBSP
 //-----------------------------------------------------------------------------
@@ -4903,16 +4903,16 @@ bool RepackBSP( CUtlBuffer &inputBuffer, CUtlBuffer &outputBuffer, CompressFunc_
 			}
 			unsigned int newOffset = AlignBuffer( outputBuffer, alignment );
 
-			CUtlBuffer inputBuffer;
-#ifndef INFESTED_DLL
+			CUtlBuffer inBuffer;
+#ifdef HAS_LUMP_COMPRESSION
 			if ( pSortedLump->pLump->uncompressedSize )
 			{
 				byte *pCompressedLump = ((byte *)pInBSPHeader) + pSortedLump->pLump->fileofs;
 				if ( CLZMA::IsCompressed( pCompressedLump ) && pSortedLump->pLump->uncompressedSize == CLZMA::GetActualSize( pCompressedLump ) )
 				{
 					inputBuffer.EnsureCapacity( CLZMA::GetActualSize( pCompressedLump ) );
-					unsigned int outSize = CLZMA::Uncompress( pCompressedLump, (unsigned char *)inputBuffer.Base() );
-					inputBuffer.SeekPut( CUtlBuffer::SEEK_CURRENT, outSize );
+					unsigned int outSize = CLZMA::Uncompress( pCompressedLump, (unsigned char *)inBuffer.Base() );
+					inBuffer.SeekPut( CUtlBuffer::SEEK_CURRENT, outSize );
 					if ( outSize != pSortedLump->pLump->uncompressedSize )
 					{
 						Warning( "Decompressed size differs from header, BSP may be corrupt\n" );
@@ -4929,7 +4929,7 @@ bool RepackBSP( CUtlBuffer &inputBuffer, CUtlBuffer &outputBuffer, CompressFunc_
 #endif
 			{
 				// Just use input
-				inputBuffer.SetExternalBuffer( ((byte *)pInBSPHeader) + pSortedLump->pLump->fileofs,
+				inBuffer.SetExternalBuffer( ((byte *)pInBSPHeader) + pSortedLump->pLump->fileofs,
 				                               pSortedLump->pLump->filelen, pSortedLump->pLump->filelen );
 			}
 
@@ -4942,7 +4942,7 @@ bool RepackBSP( CUtlBuffer &inputBuffer, CUtlBuffer &outputBuffer, CompressFunc_
 			{
 				IZip *newPakFile = IZip::CreateZip( NULL );
 				IZip *oldPakFile = IZip::CreateZip( NULL );
-				oldPakFile->ParseFromBuffer( inputBuffer.Base(), inputBuffer.Size() );
+				oldPakFile->ParseFromBuffer( inBuffer.Base(), inBuffer.Size() );
 
 				int id = -1;
 				int fileSize;
@@ -4981,13 +4981,13 @@ bool RepackBSP( CUtlBuffer &inputBuffer, CUtlBuffer &outputBuffer, CompressFunc_
 			else
 			{
 				CUtlBuffer compressedBuffer;
-#ifdef INFESTED_DLL
+#ifndef HAS_LUMP_COMPRESSION
 				Assert( !pCompressFunc );
 #else
-				bool bCompressed = pCompressFunc ? pCompressFunc( inputBuffer, compressedBuffer ) : false;
+				bool bCompressed = pCompressFunc ? pCompressFunc( inBuffer, compressedBuffer ) : false;
 				if ( bCompressed )
 				{
-					sOutBSPHeader.lumps[lumpNum].uncompressedSize = inputBuffer.TellPut();
+					sOutBSPHeader.lumps[lumpNum].uncompressedSize = inBuffer.TellPut();
 					sOutBSPHeader.lumps[lumpNum].filelen = compressedBuffer.TellPut();
 					sOutBSPHeader.lumps[lumpNum].fileofs = newOffset;
 					outputBuffer.Put( compressedBuffer.Base(), compressedBuffer.TellPut() );
@@ -4998,8 +4998,8 @@ bool RepackBSP( CUtlBuffer &inputBuffer, CUtlBuffer &outputBuffer, CompressFunc_
 				{
 					// add as is
 					sOutBSPHeader.lumps[lumpNum].fileofs = newOffset;
-					sOutBSPHeader.lumps[lumpNum].filelen = inputBuffer.TellPut();
-					outputBuffer.Put( inputBuffer.Base(), inputBuffer.TellPut() );
+					sOutBSPHeader.lumps[lumpNum].filelen = inBuffer.TellPut();
+					outputBuffer.Put( inBuffer.Base(), inBuffer.TellPut() );
 				}
 			}
 		}

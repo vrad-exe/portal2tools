@@ -207,7 +207,7 @@ int CStripper::CreateStrip(int tri, int vert, int maxlen, int *pswaps,
         fstartcw = !fstartcw;
 
         // find the next natural edge
-        int edge = (fstartcw ? vert + 2 : vert + 1) % 3;
+        edge = (fstartcw ? vert + 2 : vert + 1) % 3;
         nexttri = m_ptriinfo[tri].neighbortri[edge];
         nextvert = m_ptriinfo[tri].neighboredge[edge];
 
@@ -476,9 +476,9 @@ int CStripper::CreateLongStrip(STRIPLIST *pstriplist, WORD **ppstripindices)
     while(pstriplist->size())
     {
         istriplist = FindBestCachedStrip(pstriplist, vertcache);
-        STRIPVERTS &stripverts = **istriplist;
+        STRIPVERTS &newstripverts = **istriplist;
         short lastvert = pstripindices[numstripindices - 1];
-        short firstvert = stripverts[0];
+        short firstvert = newstripverts[0];
 
         if(firstvert != lastvert)
         {
@@ -490,7 +490,7 @@ int CStripper::CreateLongStrip(STRIPLIST *pstriplist, WORD **ppstripindices)
         }
 
         // if we're not orientated correctly, we need to add a degenerate
-        if(FIsStripCW(stripverts) != !(numstripindices & 0x1))
+        if(FIsStripCW(newstripverts) != !(numstripindices & 0x1))
         {
             // This shouldn't happen - we're currently trying very hard
             // to keep everything oriented correctly.
@@ -499,14 +499,14 @@ int CStripper::CreateLongStrip(STRIPLIST *pstriplist, WORD **ppstripindices)
         }
 
         // add these verts
-        for(int ivert = 0; ivert < StripLen(stripverts); ivert++)
+        for(int ivert = 0; ivert < StripLen(newstripverts); ivert++)
         {
-            pstripindices[numstripindices++] = stripverts[ivert];
-            vertcache.Add(1, stripverts[ivert]);
+            pstripindices[numstripindices++] = newstripverts[ivert];
+            vertcache.Add(1, newstripverts[ivert]);
         }
 
         // free these guys
-        delete &stripverts;
+        delete &newstripverts;
         pstriplist->erase(istriplist);
     }
 

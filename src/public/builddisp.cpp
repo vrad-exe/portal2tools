@@ -217,8 +217,8 @@ void CCoreDispSurface::Init( void )
 
 	m_PointStartIndex = -1;
 	VectorClear( m_PointStart );
-	VectorClear( sAxis );
-	VectorClear( tAxis );
+	VectorClear( m_sAxis );
+	VectorClear( m_tAxis );
 
 	for( i = 0; i < 4; i++ )
 	{
@@ -785,9 +785,9 @@ void CCoreDispInfo::InitDispInfo( int power, int minTess, float smoothingAngle, 
 	if ( ( minTess & 0x80000000 ) != 0 )
 	{
 		// If the high bit is set, this represents FLAGS (SURF_NOPHYSICS_COLL, etc.) flags.
-		int nFlags = minTess;
-		nFlags &= ~0x80000000;
-		GetSurface()->SetFlags( nFlags );
+		int nDispFlags = minTess;
+		nDispFlags &= ~0x80000000;
+		GetSurface()->SetFlags( nDispFlags );
 	}
 
 	// Allocate + initialize verts

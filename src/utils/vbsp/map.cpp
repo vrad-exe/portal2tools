@@ -15,6 +15,7 @@
 #include "materialsub.h"
 #include "fgdlib/fgdlib.h"
 #include "manifest.h"
+#include "filesystem_init.h"
 
 #ifdef VSVMFIO
 #include "VmfImport.h"
@@ -58,7 +59,7 @@ int	CMapFile::c_areaportals = 0;
 
 void CMapFile::Init( void )
 {
-	entity_num = 0;
+	g_entity_num = 0;
 	num_entities = 0;
 
 	nummapplanes = 0;
@@ -2015,6 +2016,7 @@ void CMapFile::ForceFuncAreaPortalWindowContents()
 
 static GameData	GD;
 
+#if 0 // Duplicate of the version in filesystem_init.cpp
 //-----------------------------------------------------------------------------
 // Purpose: this function will read in a standard key / value file
 // Input  : pFilename - the absolute name of the file to read
@@ -2043,6 +2045,7 @@ static KeyValues *ReadKeyValuesFile( const char *pFilename )
 
 	return kv;
 }
+#endif
 
 
 //-----------------------------------------------------------------------------

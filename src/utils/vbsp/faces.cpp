@@ -649,7 +649,7 @@ void FixFaceEdges (face_t **pList, face_t *f)
 	FaceFromSuperverts (pList, f, base);
 
 	// if this is the world, then re-triangulate to sew cracks
-	if ( f->badstartvert && entity_num == 0 )
+	if ( f->badstartvert && g_entity_num == 0 )
 	{
 		CUtlVector<face_vert_table_t> poly;
 		CUtlVector<int> inIndices;
@@ -943,7 +943,8 @@ The originals will NOT be freed.
 */
 winding_t *TryMergeWinding (winding_t *f1, winding_t *f2, Vector& planenormal)
 {
-	Vector		*p1, *p2, *p3, *p4, *back;
+	// Had to rename these because p4 is the perforce interface - Kelsey
+	Vector		*pt1, *pt2, *pt3, *pt4, *back;
 	winding_t	*newf;
 	int			i, j, k, l;
 	Vector		normal, delta;
@@ -954,22 +955,22 @@ winding_t *TryMergeWinding (winding_t *f1, winding_t *f2, Vector& planenormal)
 	//
 	// find a common edge
 	//	
-	p1 = p2 = NULL;	// stop compiler warning
+	pt1 = pt2 = NULL;	// stop compiler warning
 	j = 0;			// 
 	
 	for (i=0 ; i<f1->numpoints ; i++)
 	{
-		p1 = &f1->p[i];
-		p2 = &f1->p[(i+1)%f1->numpoints];
+		pt1 = &f1->p[i];
+		pt2 = &f1->p[(i+1)%f1->numpoints];
 		for (j=0 ; j<f2->numpoints ; j++)
 		{
-			p3 = &f2->p[j];
-			p4 = &f2->p[(j+1)%f2->numpoints];
+			pt3 = &f2->p[j];
+			pt4 = &f2->p[(j+1)%f2->numpoints];
 			for (k=0 ; k<3 ; k++)
 			{
-				if (fabs((*p1)[k] - (*p4)[k]) > EQUAL_EPSILON)
+				if (fabs((*pt1)[k] - (*pt4)[k]) > EQUAL_EPSILON)
 					break;
-				if (fabs((*p2)[k] - (*p3)[k]) > EQUAL_EPSILON)
+				if (fabs((*pt2)[k] - (*pt3)[k]) > EQUAL_EPSILON)
 					break;
 			}
 			if (k==3)
@@ -987,24 +988,24 @@ winding_t *TryMergeWinding (winding_t *f1, winding_t *f2, Vector& planenormal)
 	// if the slopes are colinear, the point can be removed
 	//
 	back = &f1->p[(i+f1->numpoints-1)%f1->numpoints];
-	VectorSubtract (*p1, *back, delta);
+	VectorSubtract (*pt1, *back, delta);
 	CrossProduct (planenormal, delta, normal);
 	VectorNormalize (normal);
 	
 	back = &f2->p[(j+2)%f2->numpoints];
-	VectorSubtract (*back, *p1, delta);
+	VectorSubtract (*back, *pt1, delta);
 	dot = DotProduct (delta, normal);
 	if (dot > CONTINUOUS_EPSILON)
 		return NULL;			// not a convex polygon
 	keep1 = (qboolean)(dot < -CONTINUOUS_EPSILON);
 	
 	back = &f1->p[(i+2)%f1->numpoints];
-	VectorSubtract (*back, *p2, delta);
+	VectorSubtract (*back, *pt2, delta);
 	CrossProduct (planenormal, delta, normal);
 	VectorNormalize (normal);
 
 	back = &f2->p[(j+f2->numpoints-1)%f2->numpoints];
-	VectorSubtract (*back, *p2, delta);
+	VectorSubtract (*back, *pt2, delta);
 	dot = DotProduct (delta, normal);
 	if (dot > CONTINUOUS_EPSILON)
 		return NULL;			// not a convex polygon
@@ -1331,7 +1332,7 @@ face_t *FaceFromPortal (portal_t *p, int pside)
 
     // save plane info
 	f->planenum = (side->planenum & ~1) | pside;
-	if ( entity_num != 0 )
+	if ( g_entity_num != 0 )
 	{
 		// the brush model renderer doesn't use PLANEBACK, so write the real plane
 		// inside water faces can be flipped because they are generated on the inside of the brush

@@ -246,7 +246,7 @@ struct tree_t
 };
 
 
-extern	int			entity_num;
+extern	int			g_entity_num;
 
 struct LoadSide_t;
 struct LoadEntity_t;
@@ -369,7 +369,7 @@ extern	bool		g_bAllowDetailCracks;
 extern	bool		g_bNoVirtualMesh;
 extern	char		outbase[32];
 
-extern	char	source[1024];
+extern	char	g_szSource[1024];
 extern char		mapbase[ 64 ];
 extern CUtlVector<int> g_SkyAreas;
 

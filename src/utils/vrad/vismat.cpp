@@ -15,7 +15,7 @@ static MessageBuffer mb;
 
 #define	HALFBIT
 
-extern char		source[MAX_PATH];
+extern char		g_szSource[MAX_PATH];
 extern char		vismatfile[_MAX_PATH];
 extern char		incrementfile[_MAX_PATH];
 extern qboolean	incremental;

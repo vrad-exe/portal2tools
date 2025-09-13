@@ -924,7 +924,7 @@ void WriteBSP (node_t *headnode, face_t *pLeafFaceList )
 	for( i = 0; i < nummapdispinfo; i++ )
 	{
 		int entityIndex = GetDispInfoEntityNum( &mapdispinfo[i] );
-		if( entityIndex == entity_num )
+		if( entityIndex == g_entity_num )
 		{
 			EmitFaceVertexes( NULL, &mapdispinfo[i].face );
 			EmitFace( &mapdispinfo[i].face, FALSE );
@@ -1285,7 +1285,7 @@ void EndBSPFile (void)
 	DiscoverMacroTextures();
 
 	char fileName[1024];
-	V_strncpy( fileName, source, sizeof( fileName ) );
+	V_strncpy( fileName, g_szSource, sizeof( fileName ) );
 	V_DefaultExtension( fileName, ".bsp", sizeof( fileName ) );
 	Msg ("Writing %s\n", fileName);
 	WriteBSPFile (fileName);
@@ -1320,7 +1320,7 @@ void BeginModel (void)
 	//
 	// bound the brushes
 	//
-	e = &entities[entity_num];
+	e = &entities[g_entity_num];
 
 	start = e->firstbrush;
 	end = start + e->numbrushes;

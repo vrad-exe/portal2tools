@@ -671,7 +671,7 @@ bspbrush_t *ChopBrushes (bspbrush_t *head)
 	qprintf ("original brushes: %i\n", CountBrushList (head));
 
 #if DEBUG_BRUSHMODEL
-	if (entity_num == DEBUG_BRUSHMODEL)
+	if (g_entity_num == DEBUG_BRUSHMODEL)
 		WriteBrushList ("before.gl", head, false);
 #endif
 	keep = NULL;
@@ -772,7 +772,7 @@ newlist:
 
 	qprintf ("output brushes: %i\n", CountBrushList (keep));
 #if DEBUG_BRUSHMODEL
-	if ( entity_num == DEBUG_BRUSHMODEL )
+	if ( g_entity_num == DEBUG_BRUSHMODEL )
 	{
 		WriteBrushList ("after.gl", keep, false);
 		WriteBrushMap ("after.map", keep);

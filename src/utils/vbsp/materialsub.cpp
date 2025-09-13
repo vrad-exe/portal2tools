@@ -20,7 +20,7 @@ static KeyValues *curMapKeys	= 0;
 //-----------------------------------------------------------------------------
 // Purpose: Loads the KeyValues file for materials replacements
 //-----------------------------------------------------------------------------
-void LoadMaterialReplacementKeys( const char *gamedir, const char *mapname )
+void LoadMaterialReplacementKeys( const char *pszGameDir, const char *pszMapName )
 {
 	// Careful with static variables
 	if( kv )
@@ -37,7 +37,7 @@ void LoadMaterialReplacementKeys( const char *gamedir, const char *mapname )
 
 	// Attach the path to the keyValues file
 	char path[1024];
-	Q_snprintf( path, sizeof( path ), "%scfg\\materialsub.cfg", gamedir );
+	Q_snprintf( path, sizeof( path ), "%scfg\\materialsub.cfg", pszGameDir );
 	
 	// Load the keyvalues file
 	kv = new KeyValues( "MaterialReplacements" );
@@ -56,7 +56,7 @@ void LoadMaterialReplacementKeys( const char *gamedir, const char *mapname )
 	allMapKeys = kv->FindKey( "AllMaps", true );
 
 	// Load keys for the current map
-	curMapKeys = kv->FindKey( mapname );
+	curMapKeys = kv->FindKey( pszMapName );
 
 	allMapKeys->ChainKeyValue( curMapKeys );
 }

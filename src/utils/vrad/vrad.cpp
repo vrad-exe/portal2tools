@@ -71,7 +71,7 @@ Vector		ambient( 0, 0, 0 );
 float		lightscale = 1.0;
 float		dlight_threshold = 0.1;  // was DIRECT_LIGHT constant
 
-char		source[MAX_PATH] = "";
+char		g_szSource[MAX_PATH] = "";
 
 char		level_name[MAX_PATH] = "";	// map filename, without extension or path info
 
@@ -2004,7 +2004,7 @@ bool RadWorld_Go()
 {
 	g_iCurFace = 0;
 
-	InitMacroTexture( source );
+	InitMacroTexture( g_szSource );
 
 	if( g_pIncremental )
 	{
@@ -2135,7 +2135,7 @@ void VRAD_LoadBSP( char const *pFilename )
 		SetLowPriority();
 	}
 
-	strcpy( level_name, source );
+	strcpy( level_name, g_szSource );
 
 	// This must come after InitFileSystem because the file system pointer might change.
 	if ( g_bDumpPatches )
@@ -2143,13 +2143,13 @@ void VRAD_LoadBSP( char const *pFilename )
 
 	// This part is just for VMPI. VMPI's file system needs the basedir in front of all filenames,
 	// so we prepend qdir here.
-	strcpy( source, ExpandPath( source ) );
+	strcpy( g_szSource, ExpandPath( g_szSource ) );
 
 	if ( !g_bUseMPI )
 	{
 		// Setup the logfile.
 		char logFile[512];
-		_snprintf( logFile, sizeof(logFile), "%s.log", source );
+		_snprintf( logFile, sizeof(logFile), "%s.log", g_szSource );
 		SetSpewFunctionLogFile( logFile );
 	}
 
@@ -2168,7 +2168,7 @@ void VRAD_LoadBSP( char const *pFilename )
 	}
 
 	// Set the optional level specific lights filename
-	strcpy( level_lights, source );
+	strcpy( level_lights, g_szSource );
 
 	Q_DefaultExtension( level_lights, ".rad", sizeof( level_lights ) );
 	if ( !g_pFileSystem->FileExists( level_lights ) ) 
@@ -2178,26 +2178,26 @@ void VRAD_LoadBSP( char const *pFilename )
 	if ( *designer_lights ) ReadLightFile(designer_lights);	// Command-line
 	if ( *level_lights )	ReadLightFile(level_lights);	// Optional & implied
 
-	strcpy(incrementfile, source);
+	strcpy(incrementfile, g_szSource);
 	Q_DefaultExtension(incrementfile, ".r0", sizeof(incrementfile));
-	Q_DefaultExtension(source, ".bsp", sizeof( source ));
+	Q_DefaultExtension(g_szSource, ".bsp", sizeof( g_szSource ));
 
-	Msg( "Loading %s\n", source );
+	Msg( "Loading %s\n", g_szSource );
 	VMPI_SetCurrentStage( "LoadBSPFile" );
-	LoadBSPFile (source);
+	LoadBSPFile (g_szSource);
 
 	// Add this bsp to our search path so embedded resources can be found
 	if ( g_bUseMPI && g_bMPIMaster )
 	{
 		// MPI Master, MPI workers don't need to do anything
-		g_pOriginalPassThruFileSystem->AddSearchPath(source, "GAME", PATH_ADD_TO_HEAD);
-		g_pOriginalPassThruFileSystem->AddSearchPath(source, "MOD", PATH_ADD_TO_HEAD);
+		g_pOriginalPassThruFileSystem->AddSearchPath(g_szSource, "GAME", PATH_ADD_TO_HEAD);
+		g_pOriginalPassThruFileSystem->AddSearchPath(g_szSource, "MOD", PATH_ADD_TO_HEAD);
 	}
 	else if ( !g_bUseMPI )
 	{
 		// Non-MPI
-		g_pFullFileSystem->AddSearchPath(source, "GAME", PATH_ADD_TO_HEAD);
-		g_pFullFileSystem->AddSearchPath(source, "MOD", PATH_ADD_TO_HEAD);
+		g_pFullFileSystem->AddSearchPath(g_szSource, "GAME", PATH_ADD_TO_HEAD);
+		g_pFullFileSystem->AddSearchPath(g_szSource, "MOD", PATH_ADD_TO_HEAD);
 	}
 
 	// now, set whether or not static prop lighting is present
@@ -2286,7 +2286,7 @@ void VRAD_LoadBSP( char const *pFilename )
 	// Setup incremental lighting.
 	if( g_pIncremental )
 	{
-		if( !g_pIncremental->Init( source, incrementfile ) )
+		if( !g_pIncremental->Init( g_szSource, incrementfile ) )
 		{
 			Error( "Unable to load incremental lighting file in %s.\n", incrementfile );
 			return;
@@ -2324,9 +2324,9 @@ void VRAD_Finish()
 		PrintBSPFileSizes();
 	}
 
-	Msg( "Writing %s\n", source );
+	Msg( "Writing %s\n", g_szSource );
 	VMPI_SetCurrentStage( "WriteBSPFile" );
-	WriteBSPFile(source);
+	WriteBSPFile(g_szSource);
 
 	if ( g_bDumpPatches )
 	{
@@ -2921,9 +2921,9 @@ int RunVRAD( int argc, char **argv )
 	}
 
 	// Initialize the filesystem, so additional commandline options can be loaded
-	Q_StripExtension( argv[ i ], source, sizeof( source ) );
+	Q_StripExtension( argv[ i ], g_szSource, sizeof( g_szSource ) );
 	CmdLib_InitFileSystem( argv[ i ] );
-	Q_FileBase( source, source, sizeof( source ) );
+	Q_FileBase( g_szSource, g_szSource, sizeof( g_szSource ) );
 
 	VRAD_LoadBSP( argv[i] );
 
@@ -2961,7 +2961,7 @@ int VRAD_Main(int argc, char **argv)
 	else
 #endif
 	{
-		LoadCmdLineFromFile( argc, argv, source, "vrad" ); // Don't do this if we're a VMPI worker..
+		LoadCmdLineFromFile( argc, argv, g_szSource, "vrad" ); // Don't do this if we're a VMPI worker..
 		SetupDefaultToolsMinidumpHandler();
 	}
 	

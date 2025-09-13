@@ -30,11 +30,6 @@ typedef CUtlVector<unsigned char, CHunkMemory<unsigned char> > CDispLightmapSamp
 typedef CUtlVector<unsigned char> CDispLightmapSamplePositions;
 #endif
 
-#ifdef INFESTED_DLL
-#define NO_PROP_LIGHTMAPS
-#define NO_PROP_SCREEN_SPACE_FADE
-#endif
-
 class ISpatialQuery;
 struct Ray_t;
 class Vector2D;

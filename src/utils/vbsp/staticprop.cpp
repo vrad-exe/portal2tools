@@ -54,7 +54,7 @@ struct StaticPropBuild_t
 	float	m_flForcedFadeScale;
 	unsigned short	m_nMinDXLevel;
 	unsigned short	m_nMaxDXLevel;
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 	int		m_LightmapResolutionX;
 	int		m_LightmapResolutionY;
 #endif
@@ -509,7 +509,7 @@ static void AddStaticPropToLump( StaticPropBuild_t const& build )
 	propLump.m_FadeMinDist = build.m_FadeMinDist;
 	propLump.m_FadeMaxDist = build.m_FadeMaxDist;
 	propLump.m_flForcedFadeScale = build.m_flForcedFadeScale;
-#ifndef INFESTED_DLL
+#ifdef HAS_DX_LEVELS
 	propLump.m_nMinDXLevel = build.m_nMinDXLevel;
 	propLump.m_nMaxDXLevel = build.m_nMaxDXLevel;
 #endif
@@ -522,7 +522,7 @@ static void AddStaticPropToLump( StaticPropBuild_t const& build )
 		}
 	}
 
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 	propLump.m_nLightmapResolutionX = build.m_LightmapResolutionX;
 	propLump.m_nLightmapResolutionY = build.m_LightmapResolutionY;
 #endif
@@ -627,14 +627,14 @@ void EmitStaticProps()
 				build.m_Flags |= STATIC_PROP_NO_SELF_SHADOWING;
 			}
 
-#ifndef NO_PROP_SCREEN_SPACE_FADE
+#ifdef HAS_PROP_SCREEN_SPACE_FADE
 			if (IntForKey( &entities[i], "screenspacefade" ) == 1)
 			{
 				build.m_Flags |= STATIC_PROP_SCREEN_SPACE_FADE;
 			}
 #endif
 
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 			if (IntForKey( &entities[i], "generatelightmaps") == 0)
 			{
 				build.m_Flags |= STATIC_PROP_NO_PER_TEXEL_LIGHTING;

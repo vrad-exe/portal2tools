@@ -27,7 +27,7 @@
 #include "pacifier.h"
 #include "materialsystem/imaterial.h"
 #include "materialsystem/hardwareverts.h"
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 #include "materialsystem/hardwaretexels.h"
 #endif
 #include "byteswap.h"
@@ -61,7 +61,7 @@ struct colorVertex_t
 	bool	m_bValid;
 };
 
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 // a texel suitable for a model
 struct colorTexel_t
 {
@@ -80,18 +80,18 @@ public:
 	~CComputeStaticPropLightingResults()
 	{
 		m_ColorVertsArrays.PurgeAndDeleteElements();
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 		m_ColorTexelsArrays.PurgeAndDeleteElements();
 #endif
 	}
 	
 	CUtlVector< CUtlVector<colorVertex_t>* > m_ColorVertsArrays;
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 	CUtlVector< CUtlVector<colorTexel_t>* > m_ColorTexelsArrays;
 #endif
 };
 
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 //-----------------------------------------------------------------------------
 struct Rasterizer
 {
@@ -237,7 +237,7 @@ CUtlSymbolTable g_ForcedTextureShadowsModels;
 // INSIDE PropTested_t.  USE THAT INSTEAD.
 IPhysicsCollision *s_pPhysCollision = NULL;
 
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 static void ConvertTexelDataToTexture(unsigned int _resX, unsigned int _resY, ImageFormat _destFmt, const CUtlVector<colorTexel_t>& _srcTexels, CUtlMemory<byte>* _outTexture);
 
 // Such a monstrosity. :(
@@ -323,7 +323,7 @@ private:
 		int						m_Flags;
 		bool					m_bLightingOriginValid;
 
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 		// Note that all lightmaps for a given prop share the same resolution (and format)--and there can be multiple lightmaps
 		// per prop (if there are multiple pieces--the watercooler is an example).
 		// This is effectively because there's not a good way in hammer for a prop to say "this should be the resolution
@@ -1055,7 +1055,7 @@ void CVradStaticPropMgr::UnserializeModels( CUtlBuffer& buf )
 		m_StaticProps[i].m_Handle = TREEDATA_INVALID_HANDLE;
 		m_StaticProps[i].m_Flags = lump.m_Flags;
 
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 		// Changed this from using DXT1 to RGB888 because the compression artifacts were pretty nasty. 
 		// TODO: Consider changing back or basing this on user selection in hammer.
 		m_StaticProps[i].m_LightmapImageFormat = IMAGE_FORMAT_RGB888;
@@ -1225,7 +1225,7 @@ void ComputeDirectLightingAtPoint( Vector &position, Vector &normal, Vector &out
 //-----------------------------------------------------------------------------
 void CVradStaticPropMgr::ApplyLightingToStaticProp( int iStaticProp, CStaticProp &prop, const CComputeStaticPropLightingResults *pResults )
 {
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 	if ( pResults->m_ColorVertsArrays.Count() == 0 && pResults->m_ColorTexelsArrays.Count() == 0 )
 #else
 	if ( pResults->m_ColorVertsArrays.Count() == 0 )
@@ -1238,7 +1238,7 @@ void CVradStaticPropMgr::ApplyLightingToStaticProp( int iStaticProp, CStaticProp
 	Assert( pStudioHdr && pVtxHdr );
 
 	int iCurColorVertsArray = 0;
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 	int iCurColorTexelsArray = 0;
 #endif
 
@@ -1253,7 +1253,7 @@ void CVradStaticPropMgr::ApplyLightingToStaticProp( int iStaticProp, CStaticProp
 			mstudiomodel_t *pStudioModel = pBodyPart->pModel( modelID );
 						
 			const CUtlVector<colorVertex_t> *colorVerts = pResults->m_ColorVertsArrays.Count() ? pResults->m_ColorVertsArrays[iCurColorVertsArray++] : nullptr;
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 			const CUtlVector<colorTexel_t> *colorTexels = pResults->m_ColorTexelsArrays.Count() ? pResults->m_ColorTexelsArrays[iCurColorTexelsArray++] : nullptr;
 #endif
 			
@@ -1285,7 +1285,7 @@ void CVradStaticPropMgr::ApplyLightingToStaticProp( int iStaticProp, CStaticProp
 							}
 						}
 
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 						if (colorTexels)
 						{
 							// TODO: Consider doing this work in the worker threads, because then we distribute it.
@@ -1346,11 +1346,11 @@ void CVradStaticPropMgr::ComputeLighting( CStaticProp &prop, int iThread, int pr
 	}
 
 	const bool withVertexLighting = (prop.m_Flags & STATIC_PROP_NO_PER_VERTEX_LIGHTING) == 0;
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 	const bool withTexelLighting = (prop.m_Flags & STATIC_PROP_NO_PER_TEXEL_LIGHTING) == 0;
 #endif
 
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 	if ( !withVertexLighting && !withTexelLighting )
 #else
 	if ( !withVertexLighting )
@@ -1368,15 +1368,18 @@ void CVradStaticPropMgr::ComputeLighting( CStaticProp &prop, int iThread, int pr
 	
 	for ( int bodyID = 0; bodyID < pStudioHdr->numbodyparts; ++bodyID )
 	{
+#ifdef HAS_PROP_LIGHTMAPS
 		OptimizedModel::BodyPartHeader_t* pVtxBodyPart = pVtxHdr->pBodyPart( bodyID );
+#endif
 		mstudiobodyparts_t *pBodyPart = pStudioHdr->pBodypart( bodyID );
 
 		for ( int modelID = 0; modelID < pBodyPart->nummodels; ++modelID )
 		{
-			OptimizedModel::ModelHeader_t* pVtxModel = pVtxBodyPart->pModel(modelID);
 			mstudiomodel_t *pStudioModel = pBodyPart->pModel( modelID );
 
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
+			OptimizedModel::ModelHeader_t* pVtxModel = pVtxBodyPart->pModel(modelID);
+
 			if (withTexelLighting)
 			{
 				CUtlVector<colorTexel_t> *pColorTexelArray = new CUtlVector<colorTexel_t>;
@@ -1400,7 +1403,7 @@ void CVradStaticPropMgr::ComputeLighting( CStaticProp &prop, int iThread, int pr
 
 				Assert(vertData); // This can only return NULL on X360 for now
 				
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 				// TODO: Move this into its own function. In fact, refactor this whole function.
 				if (withTexelLighting)
 				{
@@ -1552,7 +1555,7 @@ void CVradStaticPropMgr::SerializeLighting()
 	}
 
 	char mapName[MAX_PATH];
-	Q_FileBase( source, mapName, sizeof( mapName ) );
+	Q_FileBase( g_szSource, mapName, sizeof( mapName ) );
 
 	int size;
 	for (int i = 0; i < count; ++i)
@@ -1632,7 +1635,7 @@ void CVradStaticPropMgr::SerializeLighting()
 		AddBufferToPak( GetPakFile(), filename, (void*)pVhvHdr, pVertexData - (unsigned char*)pVhvHdr, false );
 	}
 
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 	for (int i = 0; i < count; ++i)
 	{
 		const int kAlignment = 512;
@@ -1726,7 +1729,7 @@ void CVradStaticPropMgr::VMPI_ProcessStaticProp( int iThread, int iStaticProp, M
 		pBuf->write( curList.Base(), curList.Count() * sizeof( colorVertex_t ) );
 	}
 
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 	nLists = results.m_ColorTexelsArrays.Count();
 	pBuf->write(&nLists, sizeof(nLists));
 
@@ -1762,7 +1765,7 @@ void CVradStaticPropMgr::VMPI_ReceiveStaticPropResults( int iStaticProp, Message
 		pBuf->read( pList->Base(), count * sizeof( colorVertex_t ) );
 	}
 
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 	pBuf->read(&nLists, sizeof(nLists));
 
 	for (int i = 0; i < nLists; i++)
@@ -2314,7 +2317,7 @@ inline float ComputeBarycentricDistanceToTri( Vector _barycentricCoord, Vector2D
 	return CalcDistanceToLineSegment2D( realPos, first, second );
 }
 
-#ifndef NO_PROP_LIGHTMAPS
+#ifdef HAS_PROP_LIGHTMAPS
 // ------------------------------------------------------------------------------------------------
 static void GenerateLightmapSamplesForMesh( const matrix3x4_t& _matPos, const matrix3x4_t& _matNormal, int _iThread, int _skipProp, int _flags, int _lightmapResX, int _lightmapResY, studiohdr_t* _pStudioHdr, mstudiomodel_t* _pStudioModel, OptimizedModel::ModelHeader_t* _pVtxModel, int _meshID, CComputeStaticPropLightingResults *_outResults )
 {

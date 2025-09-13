@@ -22,7 +22,7 @@
 
 extern float		g_maxLightmapDimension;
 
-char		source[1024];
+char		g_szSource[1024];
 char		mapbase[ 64 ];
 char		name[1024];
 char		materialPath[1024];
@@ -80,7 +80,7 @@ char		g_szEmbedDir[MAX_PATH] = { 0 };
 
 int			block_xl = BLOCKS_MIN, block_xh = BLOCKS_MAX, block_yl = BLOCKS_MIN, block_yh = BLOCKS_MAX;
 
-int			entity_num;
+int			g_entity_num;
 
 
 node_t		*block_nodes[BLOCKS_SPACE+2][BLOCKS_SPACE+2];
@@ -210,7 +210,7 @@ void ProcessWorldModel (void)
 	int	optimize;
 	int			start;
 
-	e = &entities[entity_num];
+	e = &entities[g_entity_num];
 
 	brush_start = e->firstbrush;
 	brush_end = brush_start + e->numbrushes;
@@ -330,7 +330,7 @@ void ProcessWorldModel (void)
 
 	if (glview)
 	{
-		WriteGLView (tree, source);
+		WriteGLView (tree, g_szSource);
 	}
 
 	AssignOccluderAreas( tree );
@@ -386,7 +386,7 @@ void ProcessSubModel( )
 	bspbrush_t	*list;
 	Vector		mins, maxs;
 
-	e = &entities[entity_num];
+	e = &entities[g_entity_num];
 
 	start = e->firstbrush;
 	end = start + e->numbrushes;
@@ -404,13 +404,13 @@ void ProcessSubModel( )
 	{
 		const char *pClassName = ValueForKey( e, "classname" );
 		const char *pTargetName = ValueForKey( e, "targetname" );
-		Error( "bmodel %d has no head node (class '%s', targetname '%s')", entity_num, pClassName, pTargetName );
+		Error( "bmodel %d has no head node (class '%s', targetname '%s')", g_entity_num, pClassName, pTargetName );
 	}
 
 	MakeTreePortals (tree);
 	
 #if DEBUG_BRUSHMODEL
-	if ( entity_num == DEBUG_BRUSHMODEL )
+	if ( g_entity_num == DEBUG_BRUSHMODEL )
 		WriteGLView( tree, "tree_all" );
 #endif
 
@@ -421,7 +421,7 @@ void ProcessSubModel( )
 	WriteBSP( tree->headnode, NULL );
 	
 #if DEBUG_BRUSHMODEL
-	if ( entity_num == DEBUG_BRUSHMODEL )
+	if ( g_entity_num == DEBUG_BRUSHMODEL )
 	{
 		WriteGLView( tree, "tree_vis" );
 		WriteGLViewFaces( tree, "tree_faces" );
@@ -474,12 +474,12 @@ static tree_t *ClipOccluderBrushes( )
 {
 	// Create a list of all occluder brushes in the level
 	CUtlVector< mapbrush_t * > mapBrushes( 1024, 1024 );
-	for ( entity_num=0; entity_num < g_MainMap->num_entities; ++entity_num )
+	for ( g_entity_num=0; g_entity_num < g_MainMap->num_entities; ++g_entity_num )
 	{
-		if (!IsFuncOccluder(entity_num))
+		if (!IsFuncOccluder(g_entity_num))
 			continue;
 
-		entity_t *e = &entities[entity_num];
+		entity_t *e = &entities[g_entity_num];
 		int end = e->firstbrush + e->numbrushes;
 		int i;
 		for ( i = e->firstbrush; i < end; ++i )
@@ -584,9 +584,9 @@ static void EmitOccluderBrushes()
 	memset( pEmitted, 0, faceList.Count() * sizeof(int) );
 #endif
 
-	for ( entity_num=1; entity_num < num_entities; ++entity_num )
+	for ( g_entity_num=1; g_entity_num < num_entities; ++g_entity_num )
 	{
-		if (!IsFuncOccluder(entity_num))
+		if (!IsFuncOccluder(g_entity_num))
 			continue;
 
 		// Output only those parts of the occluder tree which are a part of the brush
@@ -601,13 +601,13 @@ static void EmitOccluderBrushes()
 		// NOTE: If you change the algorithm by which occluder numbers are allocated,
 		// then you must also change FixupOnlyEntsOccluderEntities() below
 		sprintf (str, "%i", nOccluder);
-		SetKeyValue (&entities[entity_num], "occludernumber", str);
+		SetKeyValue (&entities[g_entity_num], "occludernumber", str);
 
 		int nIndex = g_OccluderInfo.AddToTail();
-		g_OccluderInfo[nIndex].m_nOccluderEntityIndex = entity_num;
+		g_OccluderInfo[nIndex].m_nOccluderEntityIndex = g_entity_num;
 		
 		sideList.RemoveAll();
-		GenerateOccluderSideList( entity_num, sideList );
+		GenerateOccluderSideList( g_entity_num, sideList );
 		for ( int i = faceList.Count(); --i >= 0; )
 		{
 			// Skip nodraw surfaces, but not triggers that have been marked as nodraw
@@ -630,7 +630,7 @@ static void EmitOccluderBrushes()
 
 #ifdef _DEBUG
 				Assert( !pEmitted[i] );
-				pEmitted[i] = entity_num;
+				pEmitted[i] = g_entity_num;
 #endif
 
 				int k = g_OccluderPolyData.AddToTail();
@@ -655,7 +655,7 @@ static void EmitOccluderBrushes()
 		occluderData.polycount = g_OccluderPolyData.Count() - occluderData.firstpoly;
 
 		// Mark this brush as not having brush geometry so it won't be re-emitted with a brush model
-		entities[entity_num].numbrushes = 0;
+		entities[g_entity_num].numbrushes = 0;
 	}
 
 	FreeTree( pOccluderTree );
@@ -747,15 +747,15 @@ void FixupOnlyEntsOccluderEntities()
 {
 	char str[64];
 	int nOccluder = 0;
-	for ( entity_num=1; entity_num < num_entities; ++entity_num )
+	for ( g_entity_num=1; g_entity_num < num_entities; ++g_entity_num )
 	{
-		if (!IsFuncOccluder(entity_num))
+		if (!IsFuncOccluder(g_entity_num))
 			continue;
 
 		// NOTE: If you change the algorithm by which occluder numbers are allocated above,
 		// then you must also change this
 		sprintf (str, "%i", nOccluder);
-		SetKeyValue (&entities[entity_num], "occludernumber", str);
+		SetKeyValue (&entities[g_entity_num], "occludernumber", str);
 		++nOccluder;
 	}
 }
@@ -832,9 +832,9 @@ void ProcessModels (void)
 	// Remove them from the list of models to process below
 	EmitOccluderBrushes( );
 
-	for ( entity_num=0; entity_num < num_entities; ++entity_num )
+	for ( g_entity_num=0; g_entity_num < num_entities; ++g_entity_num )
 	{
-		entity_t *pEntity = &entities[entity_num];
+		entity_t *pEntity = &entities[g_entity_num];
 		if ( !pEntity->numbrushes )
 			continue;
 
@@ -842,7 +842,7 @@ void ProcessModels (void)
 
 		BeginModel ();
 
-		if (entity_num == 0)
+		if (g_entity_num == 0)
 		{
 			ProcessWorldModel();
 		}
@@ -895,14 +895,14 @@ int RunVBSP( int argc, char **argv )
 	
 	CmdLib_InitFileSystem( argv[ argc-1 ] );
 
-	Q_StripExtension( ExpandArg( argv[ argc-1 ] ), source, sizeof( source ) );
-	Q_FileBase( source, mapbase, sizeof( mapbase ) );
+	Q_StripExtension( ExpandArg( argv[ argc-1 ] ), g_szSource, sizeof( g_szSource ) );
+	Q_FileBase( g_szSource, mapbase, sizeof( mapbase ) );
 	strlwr( mapbase );
 
 	// Maintaining legacy behavior here to avoid breaking tools: regardless of the extension we are passed, we strip it
 	// to get the "source" name, and append extensions as desired...
 	char		mapFile[1024];
-	V_strncpy( mapFile, source, sizeof( mapFile ) );
+	V_strncpy( mapFile, g_szSource, sizeof( mapFile ) );
 	V_strncat( mapFile, ".bsp", sizeof( mapFile ) );
 
 	LoadCmdLineFromFile( argc, argv, mapbase, "vbsp" );
@@ -1291,7 +1291,7 @@ int RunVBSP( int argc, char **argv )
 
 	// Setup the logfile.
 	char logFile[512];
-	_snprintf( logFile, sizeof(logFile), "%s.log", source );
+	_snprintf( logFile, sizeof(logFile), "%s.log", g_szSource );
 	SetSpewFunctionLogFile( logFile );
 
 	LoadPhysicsDLL();
@@ -1308,9 +1308,9 @@ int RunVBSP( int argc, char **argv )
 	Msg( "materialPath: %s\n", materialPath );
 
 	// delete portal and line files
-	sprintf (path, "%s.prt", source);
+	sprintf (path, "%s.prt", g_szSource);
 	remove (path);
-	sprintf (path, "%s.lin", source);
+	sprintf (path, "%s.lin", g_szSource);
 	remove (path);
 
 	strcpy (name, ExpandArg (argv[i]));	
