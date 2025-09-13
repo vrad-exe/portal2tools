@@ -29,3 +29,11 @@ $Group "everything"
 	//"framework2"
 	//"video_services"
 }
+
+$Group "utils"
+{
+	"vbsp"
+	"vvis"
+	"vrad"
+	//"hlmv"
+}
