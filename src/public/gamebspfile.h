@@ -126,12 +126,12 @@ enum
 	// These are automatically computed
 	STATIC_PROP_FLAG_FADES	= 0x1,
 	STATIC_PROP_USE_LIGHTING_ORIGIN	= 0x2,
-	STATIC_PROP_NO_DRAW = 0x4,	// computed at run time based on dx level
+	STATIC_PROP_NO_FLASHLIGHT = 0x4,
 
 	// These are set in WC
 	STATIC_PROP_IGNORE_NORMALS	= 0x8,
 	STATIC_PROP_NO_SHADOW	= 0x10,
-	STATIC_PROP_UNUSED		= 0x20,
+	STATIC_PROP_MARKED_FOR_FAST_REFLECTION		= 0x20,
 
 	STATIC_PROP_NO_PER_VERTEX_LIGHTING = 0x40,				// in vrad, compute lighting at
 															// lighting origin, not for each vertex

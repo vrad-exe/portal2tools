@@ -52,12 +52,20 @@ struct StaticPropBuild_t
 	float	m_FadeMaxDist;
 	bool	m_FadesOut;
 	float	m_flForcedFadeScale;
+#ifdef HAS_DX_LEVELS
 	unsigned short	m_nMinDXLevel;
 	unsigned short	m_nMaxDXLevel;
+#endif
 #ifdef HAS_PROP_LIGHTMAPS
 	int		m_LightmapResolutionX;
 	int		m_LightmapResolutionY;
 #endif
+	unsigned char	m_nMinCPULevel;
+	unsigned char	m_nMaxCPULevel;
+	unsigned char	m_nMinGPULevel;
+	unsigned char	m_nMaxGPULevel;
+	color32			m_DiffuseModulation;
+	bool			m_bDisableX360;
 };
  
 
@@ -527,6 +535,13 @@ static void AddStaticPropToLump( StaticPropBuild_t const& build )
 	propLump.m_nLightmapResolutionY = build.m_LightmapResolutionY;
 #endif
 
+	propLump.m_nMinCPULevel = build.m_nMinCPULevel;
+	propLump.m_nMaxCPULevel = build.m_nMaxCPULevel;
+	propLump.m_nMinGPULevel = build.m_nMinGPULevel;
+	propLump.m_nMaxGPULevel = build.m_nMaxGPULevel;
+	propLump.m_DiffuseModulation = build.m_DiffuseModulation;
+	propLump.m_bDisableX360 = build.m_bDisableX360;
+
 	// Add the leaves to the leaf lump
 	for (int j = 0; j < leafList.Count(); ++j)
 	{
@@ -626,6 +641,14 @@ void EmitStaticProps()
 			{
 				build.m_Flags |= STATIC_PROP_NO_SELF_SHADOWING;
 			}
+			if ( IntForKey( &entities[i], "disableflashlight" ) == 1 )
+			{
+				build.m_Flags |= STATIC_PROP_NO_FLASHLIGHT;
+			}
+			if ( IntForKey( &entities[i], "drawinfastreflection" ) == 1 )
+			{
+				build.m_Flags |= STATIC_PROP_MARKED_FOR_FAST_REFLECTION;
+			}
 
 #ifdef HAS_PROP_SCREEN_SPACE_FADE
 			if (IntForKey( &entities[i], "screenspacefade" ) == 1)
@@ -672,8 +695,48 @@ void EmitStaticProps()
 			{
 				build.m_FadeMinDist = 0;
 			}
+#ifdef HAS_DX_LEVELS
 			build.m_nMinDXLevel = (unsigned short)IntForKey( &entities[i], "mindxlevel" );
 			build.m_nMaxDXLevel = (unsigned short)IntForKey( &entities[i], "maxdxlevel" );
+#endif
+			build.m_nMinCPULevel = (unsigned char)IntForKey( &entities[i], "mincpulevel" );
+			build.m_nMaxCPULevel = (unsigned char)IntForKey( &entities[i], "maxcpulevel" );
+			build.m_nMinGPULevel = (unsigned char)IntForKey( &entities[i], "mincpulevel" );
+			build.m_nMaxGPULevel = (unsigned char)IntForKey( &entities[i], "maxcpulevel" );
+
+			// Handle old VMF files that don't have these set
+			const char* szColor = ValueForKey( &entities[i], "rendercolor" );
+			if ( *szColor != '\0' )
+			{
+				V_StringToColor32( &build.m_DiffuseModulation, szColor );
+			}
+			else
+			{
+				build.m_DiffuseModulation.r = 255;
+				build.m_DiffuseModulation.g = 255;
+				build.m_DiffuseModulation.b = 255;
+			}
+
+			const char* szAlpha = ValueForKey( &entities[i], "renderamt" );
+			if ( *szAlpha != '\0' )
+			{
+				build.m_DiffuseModulation.a = V_atoi( szAlpha );
+			}
+			else
+			{
+				build.m_DiffuseModulation.a = 255;
+			}
+
+			// Not actually exposed normally as far as I can tell. Have fun console modders! - Kelsey
+			if ( IntForKey( &entities[i], "disableX360" ) == 1 )
+			{
+				build.m_bDisableX360 = true;
+			}
+			else
+			{
+				build.m_bDisableX360 = false;
+			}
+
 			AddStaticPropToLump( build );
 
 			// strip this ent from the .bsp file
