@@ -1242,8 +1242,6 @@ int RunVBSP( int argc, char **argv )
 				"                    else.\n"
 				"  -virtualdispphysics : Use virtual (not precomputed) displacement collision models\n"
 				"  -xbox           : Enable mandatory xbox options\n"
-				"  -x360		   : Generate Xbox360 version of vsp\n"
-				"  -nox360		   : Disable generation Xbox360 version of vsp (default)\n"
 				"  -replacematerials : Substitute materials according to materialsub.txt in content\\maps\n"
 				"  -FullMinidumps  : Write large minidumps on crash.\n"
 				);
