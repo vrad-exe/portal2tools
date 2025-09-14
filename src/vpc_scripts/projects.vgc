@@ -60,8 +60,17 @@ $Project "vrad_dll"
 	"utils\vrad\vrad_dll.vpc"
 }
 
+$Project "vrad_launcher"
+{
+	"utils\vrad_launcher\vrad_launcher.vpc"
+}
+
 $Project "vvis_dll"
 {
 	"utils\vvis\vvis_dll.vpc"
 }
 
+$Project "vvis_launcher"
+{
+	"utils\vvis_launcher\vvis_launcher.vpc"
+}
