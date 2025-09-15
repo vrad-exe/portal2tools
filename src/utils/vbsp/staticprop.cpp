@@ -701,8 +701,8 @@ void EmitStaticProps()
 #endif
 			build.m_nMinCPULevel = (unsigned char)IntForKey( &entities[i], "mincpulevel" );
 			build.m_nMaxCPULevel = (unsigned char)IntForKey( &entities[i], "maxcpulevel" );
-			build.m_nMinGPULevel = (unsigned char)IntForKey( &entities[i], "mincpulevel" );
-			build.m_nMaxGPULevel = (unsigned char)IntForKey( &entities[i], "maxcpulevel" );
+			build.m_nMinGPULevel = (unsigned char)IntForKey( &entities[i], "mingpulevel" );
+			build.m_nMaxGPULevel = (unsigned char)IntForKey( &entities[i], "maxgpulevel" );
 
 			// Handle old VMF files that don't have these set
 			const char* szColor = ValueForKey( &entities[i], "rendercolor" );
