@@ -699,6 +699,10 @@ void EmitStaticProps()
 			build.m_nMinDXLevel = (unsigned short)IntForKey( &entities[i], "mindxlevel" );
 			build.m_nMaxDXLevel = (unsigned short)IntForKey( &entities[i], "maxdxlevel" );
 #endif
+
+			// Reactive Drop has extra code that forces max level to be greater than min level.
+			// I am intentionally leaving this out because it's ultimately harmless and just creates
+			// invisible props, which is logically expected behavior for this configuration
 			build.m_nMinCPULevel = (unsigned char)IntForKey( &entities[i], "mincpulevel" );
 			build.m_nMaxCPULevel = (unsigned char)IntForKey( &entities[i], "maxcpulevel" );
 			build.m_nMinGPULevel = (unsigned char)IntForKey( &entities[i], "mingpulevel" );
