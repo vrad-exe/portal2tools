@@ -178,18 +178,23 @@ bool LoadStudioModel( char const* pModelName, char const* pEntityType, CUtlBuffe
 	}
 
 	isstaticprop_ret isStaticProp = IsStaticProp(pHdr);
+	bool bOverride = !V_strcmp(pEntityType, "prop_static_override");
 	if ( isStaticProp != RET_VALID )
 	{
+		Warning(bOverride ? "Warning! " : "Error! ");
+
 		if ( isStaticProp == RET_FAIL_NOT_MARKED_STATIC_PROP )
 		{
-			Warning("Error! To use model \"%s\"\n"
-				"      with %s, it must be compiled with $staticprop!\n", pModelName, pEntityType );
+			Warning("%s using model \"%s\", which is not compiled with $staticprop.", pEntityType, pModelName );
 		}
 		else if ( isStaticProp == RET_FAIL_DYNAMIC )
 		{
-			Warning("Error! %s using model \"%s\", which must be used on a dynamic entity (i.e. prop_physics). Deleted.\n", pEntityType, pModelName );
+			Warning("%s using model \"%s\", which has prop_physics data.", pEntityType, pModelName );
 		}
-		return false;
+
+		Warning(bOverride ? "\n" : " Deleted.\n");
+
+		return bOverride;
 	}
 
 	// ensure reset
@@ -252,7 +257,7 @@ CPhysCollide* ComputeConvexHull( studiohdr_t* pStudioHdr )
 //-----------------------------------------------------------------------------
 // Add, find collision model in cache
 //-----------------------------------------------------------------------------
-static CPhysCollide* GetCollisionModel( char const* pModelName )
+static CPhysCollide* GetCollisionModel( char const* pModelName, char const* pszEntName )
 {
 	// Convert to a common string
 	char* pTemp = (char*)_alloca(strlen(pModelName) + 1);
@@ -275,7 +280,7 @@ static CPhysCollide* GetCollisionModel( char const* pModelName )
 
 	// Load the studio model file
 	CUtlBuffer buf;
-	if (!LoadStudioModel(pModelName, "prop_static", buf))
+	if (!LoadStudioModel(pModelName, pszEntName, buf))
 	{
 		Warning("Error loading studio model \"%s\"!\n", pModelName );
 
@@ -483,10 +488,10 @@ static bool ComputeLightingOrigin( StaticPropBuild_t const& build, Vector& light
 //-----------------------------------------------------------------------------
 // Places Static Props in the level
 //-----------------------------------------------------------------------------
-static void AddStaticPropToLump( StaticPropBuild_t const& build )
+static void AddStaticPropToLump( StaticPropBuild_t const& build, char const* pszEntName )
 {
 	// Get the collision model
-	CPhysCollide* pConvexHull = GetCollisionModel( build.m_pModelName );
+	CPhysCollide* pConvexHull = GetCollisionModel( build.m_pModelName, pszEntName );
 	if (!pConvexHull)
 		return;
 
@@ -613,7 +618,9 @@ void EmitStaticProps()
 	for ( i = 0; i < num_entities; ++i)
 	{
 		char* pEntity = ValueForKey(&entities[i], "classname");
-		if (!strcmp(pEntity, "static_prop") || !strcmp(pEntity, "prop_static"))
+		if ( !strcmp(pEntity, "static_prop") ||
+			 !strcmp(pEntity, "prop_static") ||
+			 !strcmp(pEntity, "prop_static_override") )
 		{
 			StaticPropBuild_t build;
 
@@ -741,7 +748,7 @@ void EmitStaticProps()
 				build.m_bDisableX360 = false;
 			}
 
-			AddStaticPropToLump( build );
+			AddStaticPropToLump( build, pEntity );
 
 			// strip this ent from the .bsp file
 			entities[i].epairs = 0;
